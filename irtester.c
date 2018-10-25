@@ -1,18 +1,25 @@
-#include <stdio.h>
-#include <wiringPi.h>
+LDFLAGS=-lwiringPi
+CC=gcc
+CFLAGS=-lWarn  -pedantic
 
-int main(int argc, char *argv[])
-{
-  int i;
-  wiringPiSetup () ;
-  pinMode(0, INPUT);
-  while(1) {
-    printf("Waiting for reset\n");
-    while(digitalRead(0) == 1);
-    printf("Waiting for event\n");
-    while(digitalRead(0) == 0);
-    printf("Alarm\n");
-  }
-  /*NOTREACHED*/
-  return 0 ;
-}
+irtester:	irtester.o
+	$(CC) irtester.o -o irtester $(LDFLAGS)
+
+irtester.o:	irtester.c
+	$(CC) $(CFLAGS) -c -ansi $<
+
+tester: tester.o libmyifttt.a
+	$(CC) tester.o -L. -lmyifttt -lcurl -o tester
+
+libmyifttt.a:	ifttt.o
+	ar -rcs libmyifttt.a ifttt.o
+
+ifttt.o: 	ifttt.c ifttt.h
+	$(CC) $(CFLAGS) -c -ansi $<
+
+tester.o:	tester.c ifttt.h
+	$(CC) $(CFLAGS) -c -ansi $<
+
+clean:
+	rm tester *.o
+
